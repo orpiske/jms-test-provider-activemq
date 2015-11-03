@@ -21,7 +21,7 @@
     <artifactId>jms-test-provider-activemq</artifactId>
     <version>1.0.1-SNAPSHOT</version>
     <name>JMS Test Util: ActiveMQ Provider</name>
-    <description>This is an Active MQ provider for  JMS Test Util</description>
+    <description>This is an Active MQ provider for JMS Test Util</description>
     <url>http://orpiske.github.io/jms-test-util/</url>
 
     <licenses>
