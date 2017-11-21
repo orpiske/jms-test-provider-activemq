@@ -62,6 +62,16 @@ public class ActiveMqProvider extends AbstractProvider {
         if (!broker.isStarted()) {
             try {
                 broker.start();
+
+                for (int i = 0; i < 10; i++) {
+                    if (!broker.isStarted()) {
+                        logger.info("Waiting for the embedded broker to start");
+                        Thread.sleep(1000);
+                    }
+                    else {
+                        break;
+                    }
+                }
             } catch (Exception e) {
                 throw new ProviderInitializationException("Unable to start " +
                         "embedded ActiveMQ: " + e.getMessage(), e);
