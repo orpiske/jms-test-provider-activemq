@@ -27,6 +27,7 @@ import net.orpiske.jms.util.SerializableReplyBuilder;
 import net.orpiske.jms.util.Util;
 import net.orpiske.jms.test.annotations.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -127,6 +128,7 @@ public class RequestReplyObjectTest extends
      * @throws javax.jms.JMSException
      */
     @Test
+    @Ignore
     public void testSendReceiveText() throws JMSException {
         execTest(session, producer, consumer);
     }
