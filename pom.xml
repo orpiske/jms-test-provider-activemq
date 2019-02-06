@@ -44,7 +44,7 @@
 
     <properties>
         <activemq.version>5.15.3</activemq.version>
-        <jms.test.util>1.2.0-SNAPSHOT</jms.test.util>
+        <jms.test.util>1.2.0</jms.test.util>
     </properties>
 
     <dependencies>
