@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.jms.JMSException;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A sample ActiveMQ provider
@@ -33,6 +36,8 @@ public class ActiveMqProvider extends AbstractProvider {
             (ActiveMqProvider.class);
 
     private final BrokerService broker;
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition brokerStartedCondition = lock.newCondition();
 
     private String uri;
 
@@ -44,8 +49,6 @@ public class ActiveMqProvider extends AbstractProvider {
         logger.debug("Creating a new ActiveMQ Provider");
 
         broker = new BrokerService();
-
-
     }
 
 
@@ -58,35 +61,51 @@ public class ActiveMqProvider extends AbstractProvider {
     }
 
 
-    public void start() throws ProviderInitializationException {
-        if (!broker.isStarted()) {
+    @Override
+    public void start() throws ProviderInitializationException, InterruptedException {
+        try {
+            lock.lock();
+
             try {
                 broker.start();
-
-                for (int i = 0; i < 10; i++) {
-                    if (!broker.isStarted()) {
-                        logger.info("Waiting for the embedded broker to start");
-                        Thread.sleep(1000);
-                    }
-                    else {
-                        break;
-                    }
-                }
             } catch (Exception e) {
                 throw new ProviderInitializationException("Unable to start " +
                         "embedded ActiveMQ: " + e.getMessage(), e);
             }
 
+            int i = 30;
+            while (!broker.isStarted() && i > 0) {
+                brokerStartedCondition.await(500, TimeUnit.MILLISECONDS);
+                i--;
+            }
+
             connection = newConnection();
             session = newSession();
+        } finally {
+            lock.unlock();
         }
     }
 
     public void stop() {
         try {
-            broker.stop();
-        } catch (Exception e) {
-            e.printStackTrace();
+            lock.lock();
+
+            try {
+                broker.stop();
+
+                int i = 30;
+                while (!broker.isStopped() && i > 0) {
+                    brokerStartedCondition.await(500, TimeUnit.MILLISECONDS);
+                    i--;
+                }
+
+
+            } catch (Exception e) {
+                logger.error("Unable to stop the broker: {}", e.getMessage());
+            }
+        }
+        finally {
+            lock.unlock();
         }
     }
 
